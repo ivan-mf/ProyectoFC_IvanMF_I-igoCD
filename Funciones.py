@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from time import time 
+import datetime
 
 def generar_red_aleatoria(L):
     """
@@ -88,14 +89,14 @@ def paso_MCS(red, beta):
 
     Args:
         red (numpy.ndarray)
-        beta (float)
+        beta (float): (Temperatura * constante de botzmann)
 
     Returns:
         aceptados (int)
     """
     L = red.shape[0]
     aceptados = 0
-    for _ in range(L * L):
+    for _ in range(L * L): #Haciendo L * L volteos nos aseguramos de voltear más en redes más grandes.
         if intento_voltear(red, beta):
             aceptados += 1
     return aceptados
@@ -106,7 +107,7 @@ def energia_total(red, J=1.0):
 
     Args:
         red (numpy.ndarray)
-        J (float)
+        J (float): Constante de acoplamiento. Positiva para ferromagnetismo, negativa para anti.ferromagnetismo.
 
     Returns:
         energia (float)
@@ -162,6 +163,31 @@ def simular_T(L, T, n_equil_MCS=1000, n_muestra_MCS=1000):
         magnetizaciones.append(M)
     return np.array(energias), np.array(magnetizaciones), red
 
+def plot_red(ax, red):
+    """
+    Función para visualizar las redes.
+    """
+    L = red.shape[0]
+
+    out = ax.imshow(red, cmap='coolwarm', vmin=-1, vmax=1)
+
+    #Ponemos gridlines
+    ax.set_xticks(np.arange(-.5, L, 1), minor=True)
+    ax.set_yticks(np.arange(-.5, L, 1), minor=True)
+
+    ax.grid(which='minor', color='w', linestyle='-', linewidth=0.5)
+
+    ax.tick_params(which='both', bottom=False, left=False, labelbottom=False, labelleft=False)
+
+    return out 
+
+def nombre_plot_red(T, L):
+    """
+    Crea un nombre aprobiado para la visualización de una red.
+    """
+    hora = datetime.datetime.utcnow().strftime('%d_%H:%M:%S')
+    return f"T={T}_L={L}_{hora}.png"
+
 def barrido_temperaturas(L, temperaturas, n_equil_MCS=1000, n_muestra_MCS=1000):
     """
     Realiza un barrido en temperatura y calcula <M> para cada una.
@@ -188,6 +214,7 @@ def barrido_temperaturas(L, temperaturas, n_equil_MCS=1000, n_muestra_MCS=1000):
         t0 = time()
         energias, magnetizaciones, red_final = simular_T(L, T, n_equil_MCS, n_muestra_MCS)
         tiempo = time() - t0
+	#Calculamos observables.
         tiempos.append(tiempo)
         m_mean = np.mean(magnetizaciones)
         m_std = np.std(magnetizaciones)
@@ -198,6 +225,13 @@ def barrido_temperaturas(L, temperaturas, n_equil_MCS=1000, n_muestra_MCS=1000):
         E_prom.append(e_mean)
         E2_prom.append(e2_mean)
         C_cal.append(capacidad_calorifica_por_spin(L, T, e_mean, e2_mean))
+        
+        #Graficar red
+        archivo_plot = nombre_plot_red(T, L)
+        fig, ax = plt.subplots()
+        plot_red(ax, red_final)
+        fig.savefig(f'gráficas/{archivo_plot}')
+        
         print(f"T={T:.3f}: <M>={m_mean:.4f} ± {M_err[-1]:.4f}  (tiempo {tiempo:.1f}s)")
     return np.array(temperaturas), np.array(M_prom), np.array(M_err), C_cal, tiempos
 
