@@ -171,12 +171,7 @@ def plot_red(ax, red):
 
     out = ax.imshow(red, cmap='coolwarm', vmin=-1, vmax=1)
 
-    #Ponemos gridlines
-    ax.set_xticks(np.arange(-.5, L, 1), minor=True)
-    ax.set_yticks(np.arange(-.5, L, 1), minor=True)
-
-    ax.grid(which='minor', color='w', linestyle='-', linewidth=0.5)
-
+    #Sin numeros
     ax.tick_params(which='both', bottom=False, left=False, labelbottom=False, labelleft=False)
 
     return out 
