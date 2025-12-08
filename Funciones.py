@@ -226,6 +226,7 @@ def barrido_temperaturas(L, temperaturas, n_equil_MCS=1000, n_muestra_MCS=1000):
         fig, ax = plt.subplots()
         plot_red(ax, red_final)
         fig.savefig(f'gráficas/{archivo_plot}')
+        plt.close()
         
         print(f"T={T:.3f}: <M>={m_mean:.4f} ± {M_err[-1]:.4f}  (tiempo {tiempo:.1f}s)")
     return np.array(temperaturas), np.array(M_prom), np.array(M_err), C_cal, tiempos
